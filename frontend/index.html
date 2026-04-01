@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Content Factory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .output h3 {
+            margin-bottom: 10px;
+        }
+        .output p, .output ul {
+            margin: 0 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Autonomous Content Factory</h1>
+        <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+        <button onclick="generateContent()">Generate</button>
+        <div class="output" id="output">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        async function generateContent() {
+            const inputText = document.getElementById('inputText').value;
+            const outputDiv = document.getElementById('output');
+
+            outputDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                // Updated fetch call to connect frontend to the backend pipeline
+                fetch("http://127.0.0.1:8000/generate-full-content", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        text: inputText
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    // Display the generated content in the UI
+                    outputDiv.innerHTML = `
+                        <h3>Blog:</h3>
+                        <p>${data.blog}</p>
+                        <h3>Social Media Posts:</h3>
+                        <ul>
+                            ${data.social_media_posts.map(post => `<li>${post}</li>`).join('')}
+                        </ul>
+                        <h3>Email Teaser:</h3>
+                        <p>${data.email_teaser}</p>
+                    `;
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    outputDiv.innerHTML = `<p style='color: red;'>Error: ${err.message}</p>`;
+                });
+            } catch (error) {
+                outputDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
