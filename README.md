@@ -4,7 +4,10 @@
 Autonomous Content Factory
 
 ## The Problem
-Manually rewriting content for multiple platforms is repetitive, time-consuming, and prone to inconsistencies. This process delays product launches and causes creative burnout for marketing teams.
+Every time a product feature is launched or a technical article is written, the Marketing team must manually
+rewrite the same content multiple times — once for a blog, once for LinkedIn, once for a client newsletter.
+This repetitive process causes creative burnout, introduces inconsistencies in tone and facts, and creates a
+bottleneck that slows down every product launch.
 
 ## The Solution
 Autonomous Content Factory automates the process of content creation by using AI to verify facts and generate platform-specific content. The system ensures consistency, reduces manual effort, and accelerates the content production pipeline. Key features include fact-checking, structured fact-sheet generation, and multi-platform content creation (blogs, social media posts, and email teasers).
@@ -45,14 +48,10 @@ Autonomous Content Factory automates the process of content creation by using AI
 ---
 
 ## Source Code
-The complete source code is available on GitHub: [GitHub Repository](<repository-url>)
+The complete source code is available on GitHub: [GitHub Repository](https://github.com/mneerajaghub/Autonomous-Content-Factory.git)
 
-## Video Demo
-- **Duration**: 2-3 minutes
-- **Content**:
-  - Demonstrates the working application
-  - Highlights key features and user flow
-  - Shows a real usage scenario
+## Demo Video
+You can view the demo video of the project [here](https://drive.google.com/drive/folders/1ZBXvymwcxUezgUPYSQuWIsqV1VyKRUJe).
 
 ## Hosted Link (Optional)
 - **Live URL**: [Hosted Application](<live-url>)
