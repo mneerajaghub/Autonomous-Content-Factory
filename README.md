@@ -4,46 +4,48 @@
 Autonomous Content Factory
 
 ## The Problem
-Every time a product feature is launched or a technical article is written, the Marketing team must manually
-rewrite the same content multiple times — once for a blog, once for LinkedIn, once for a client newsletter.
-This repetitive process causes creative burnout, introduces inconsistencies in tone and facts, and creates a
-bottleneck that slows down every product launch.
+Creating high-quality, fact-checked content is time-consuming and requires significant manual effort. This project addresses the challenge of automating content generation while ensuring factual accuracy.
 
 ## The Solution
-Autonomous Content Factory automates the process of content creation by using AI to verify facts and generate platform-specific content. The system ensures consistency, reduces manual effort, and accelerates the content production pipeline. Key features include fact-checking, structured fact-sheet generation, and multi-platform content creation (blogs, social media posts, and email teasers).
+The Autonomous Content Factory automates the process of content generation and fact-checking using a FastAPI backend and a simple frontend interface. It integrates mock responses for OpenAI API calls to demonstrate the pipeline's functionality. Key features include endpoints for fact-checking, content generation, and a full pipeline integration.
 
 ## Tech Stack
 - **Programming Languages**: Python, JavaScript
-- **Frameworks**: FastAPI (Backend), HTML/CSS/JavaScript (Frontend)
-- **APIs**: OpenAI (mocked for development)
-- **Databases**: None (current implementation is stateless)
+- **Frameworks**: FastAPI
+- **Databases**: None (mock responses used for demonstration)
+- **APIs or Third-party Tools**: None (mock responses replace external API calls)
 
 ## Setup Instructions
-
-### Prerequisites
-- Python 3.9 or higher
-- Node.js (optional, for frontend development)
-
-### Steps
 1. Clone the repository:
    ```bash
    git clone <repository-url>
+   ```
+2. Navigate to the project directory:
+   ```bash
    cd Autonomous-Content-Factory
    ```
-2. Set up a virtual environment:
+3. Set up a virtual environment:
    ```bash
    python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
-3. Install dependencies:
+4. Activate the virtual environment:
+   - On Windows:
+     ```bash
+     .venv\Scripts\activate
+     ```
+   - On macOS/Linux:
+     ```bash
+     source .venv/bin/activate
+     ```
+5. Install dependencies:
    ```bash
    pip install -r backend/requirements.txt
    ```
-4. Start the backend server:
+6. Run the backend server:
    ```bash
    uvicorn backend.main:app --reload
    ```
-5. Open the `frontend/index.html` file in a browser to access the frontend.
+7. Open the `index.html` file in the `frontend` folder to access the frontend interface.
 
 ---
 
