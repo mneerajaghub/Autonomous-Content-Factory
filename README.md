@@ -9,6 +9,9 @@ Creating high-quality, fact-checked content is time-consuming and requires signi
 ## The Solution
 The Autonomous Content Factory automates the process of content generation and fact-checking using a FastAPI backend and a simple frontend interface. It integrates mock responses for OpenAI API calls to demonstrate the pipeline's functionality. Key features include endpoints for fact-checking, content generation, and a full pipeline integration.
 
+### Note:
+The mock system is designed to simulate real functionality. It dynamically generates content based on the input topic but may use predefined templates or varied phrasing for demonstration purposes. The real functionality, when connected to the OpenAI API, would provide more sophisticated and contextually relevant outputs.
+
 ## Tech Stack
 - **Programming Languages**: Python, JavaScript
 - **Frameworks**: FastAPI
