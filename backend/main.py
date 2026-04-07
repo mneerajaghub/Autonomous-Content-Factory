@@ -1,259 +1,214 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-import os
-from fastapi.middleware.cors import CORSMiddleware
-from openai import OpenAI  # Updated OpenAI import
 import random
+import re
+from fastapi.middleware.cors import CORSMiddleware
 
-# Initialize FastAPI app
 app = FastAPI()
 
-# Add CORS middleware to allow frontend requests
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this to restrict origins if needed
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# Add a flag to toggle between mock and real API calls
-USE_MOCK = True
-
-# Mock function for fact-checking
-def generate_fact_sheet_mock(text):
-    text = text.lower()
-
-    # Predefined mock data for specific topics
-    predefined_topics = {
-        "fuel": {
-            "features": [
-                "On-demand fuel delivery",
-                "Mobile app ordering",
-                "Real-time tracking"
-            ],
-            "target_audience": "Vehicle owners and fleet operators",
-            "key_points": [
-                "Saves time",
-                "Avoids fuel station queues",
-                "Convenient doorstep service"
-            ]
-        },
-        "food": {
-            "features": [
-                "Online food ordering",
-                "Fast delivery",
-                "Restaurant integration"
-            ],
-            "target_audience": "Food lovers and busy professionals",
-            "key_points": [
-                "Quick meals",
-                "Wide variety",
-                "Convenience"
-            ]
-        }
-    }
-
-    # Check if the topic matches predefined topics
-    for keyword, data in predefined_topics.items():
-        if keyword in text:
-            return {
-                **data,
-                "unclear_info": []
-            }
-
-    # Default dynamic generation for other topics with varied wording
-    synonyms = ["solutions", "innovations", "technologies", "platforms"]
-    random_synonym = random.choice(synonyms)
-
-    return {
-        "features": [
-            f"Cutting-edge {random_synonym} for {text}",
-            f"Advanced tools to enhance {text}",
-            f"User-friendly interfaces for better {text} management"
-        ],
-        "target_audience": f"Professionals and enthusiasts in the field of {text}",
-        "key_points": [
-            f"Boosts {text} efficiency",
-            f"Delivers measurable improvements in {text}",
-            f"Simplifies complex {text} workflows"
-        ],
-        "unclear_info": []
-    }
-
-# Mock function for content generation
-def generate_content_mock(fact_sheet, user_input):
-    return {
-        "blog": f"This platform is designed for {fact_sheet['target_audience']}. It offers features like {', '.join(fact_sheet['features'])}. Key benefits include {', '.join(fact_sheet['key_points'])}. Overall, it provides a reliable and efficient solution for modern needs.",
-        
-        "social_media_posts": [
-            f"🚀 Discover a solution for {fact_sheet['target_audience']}!",
-            f"✨ Features: {', '.join(fact_sheet['features'])}",
-            f"⏱ Benefits: {fact_sheet['key_points'][0]}",
-            f"📢 Designed for convenience and efficiency",
-            f"🔥 Try it today!"
-        ],
-        
-        "email_teaser": f"Introducing a solution for {fact_sheet['target_audience']} with features like {', '.join(fact_sheet['features'])}. Experience {fact_sheet['key_points'][0]} today!"
-    }
-
-# Define input model for fact-checking
+# -----------------------------
+# Models
+# -----------------------------
 class FactCheckInput(BaseModel):
     text: Optional[str] = None
     url: Optional[str] = None
 
-# Define output model for fact-sheet
 class FactSheet(BaseModel):
     features: list[str]
     target_audience: str
     key_points: list[str]
-    unclear_info: Optional[list[str]] = None
+    unclear_info: Optional[list[str]] = []
 
-# Define input model for content generation
 class ContentGenerationInput(BaseModel):
     features: list[str]
     target_audience: str
     key_points: list[str]
 
-# Define output model for generated content
 class GeneratedContent(BaseModel):
     blog: str
     social_media_posts: list[str]
     email_teaser: str
 
-# Function to generate a Fact-Sheet from user input
+# -----------------------------
+# Helper: Clean weird JSON text
+# -----------------------------
+def clean_text(text: str) -> str:
+    if not text:
+        return ""
+    # Remove JSON-like patterns
+    text = re.sub(r"\{.*?\}", "", text)
+    return text.strip()
+
+# -----------------------------
+# Dynamic Fact Sheet Generator
+# -----------------------------
+def generate_fact_sheet_dynamic(user_input: str):
+    text = user_input.lower()
+
+    if "fuel" in text:
+        return {
+            "features": ["On-demand fuel delivery", "Mobile app ordering", "Real-time tracking"],
+            "target_audience": "Vehicle owners and fleet operators",
+            "key_points": ["Saves time", "Avoids fuel station queues", "Doorstep convenience"]
+        }
+
+    elif "ai" in text:
+        return {
+            "features": ["AI automation", "Smart analytics", "User-friendly interface"],
+            "target_audience": "Businesses and tech enthusiasts",
+            "key_points": ["Improves efficiency", "Reduces manual work", "Enhances decision making"]
+        }
+
+    elif "health" in text:
+        return {
+            "features": ["Digital health tracking", "AI diagnostics", "Remote consultation"],
+            "target_audience": "Patients and healthcare professionals",
+            "key_points": ["Better healthcare access", "Early diagnosis", "Improved patient care"]
+        }
+
+    elif "education" in text:
+        return {
+            "features": ["Online courses", "Interactive learning tools", "Personalized progress tracking"],
+            "target_audience": "Students and educators",
+            "key_points": ["Flexible learning", "Affordable education", "Engaging content"]
+        }
+
+    elif "fitness" in text:
+        return {
+            "features": ["Workout plans", "Nutrition tracking", "Progress monitoring"],
+            "target_audience": "Fitness enthusiasts and trainers",
+            "key_points": ["Achieve goals faster", "Stay motivated", "Track progress easily"]
+        }
+
+    elif "travel" in text:
+        return {
+            "features": ["Itinerary planning", "Budget-friendly options", "Local guides"],
+            "target_audience": "Travelers and adventurers",
+            "key_points": ["Explore new places", "Save money", "Travel hassle-free"]
+        }
+
+    # Default fallback
+    return {
+        "features": ["Smart automation", "User-friendly interface", "Scalable solution"],
+        "target_audience": "General users",
+        "key_points": ["Saves time", "Improves efficiency", "Easy to use"]
+    }
+
+# -----------------------------
+# Dynamic Content Generator
+# -----------------------------
+def generate_content_mock(fact_sheet):
+    features = fact_sheet["features"]
+    audience = clean_text(fact_sheet["target_audience"])
+    points = fact_sheet["key_points"]
+
+    # Blog templates
+    blog_templates = [
+        f"Imagine a solution built specifically for {audience}. With features like {', '.join(features)}, it transforms user experience. Key benefits include {', '.join(points)}, making it a powerful modern solution.",
+
+        f"In today’s fast-paced world, {audience} need smarter tools. This platform offers {', '.join(features)} and helps users by {', '.join(points)}.",
+
+        f"This innovative platform targets {audience} with features like {', '.join(features)}. It ensures {', '.join(points)} while improving overall efficiency."
+    ]
+
+    # Social media templates
+    social_templates = [
+        [
+            f"🚀 Built for {audience}!",
+            f"✨ Features: {', '.join(features)}",
+            f"🔥 {points[0]}",
+            "📢 Smarter. Faster. Better.",
+            "💡 Try it today!"
+        ],
+        [
+            f"🎯 Perfect for {audience}",
+            f"⚙️ {features[0]} + {features[1]}",
+            f"⏱ {points[0]}",
+            "🚀 Upgrade your workflow",
+            "✨ Experience the difference"
+        ],
+        [
+            f"💥 Game changer for {audience}",
+            f"📦 {', '.join(features)}",
+            f"✅ {', '.join(points)}",
+            "🔥 Don't miss out",
+            "🚀 Start now!"
+        ]
+    ]
+
+    # Email templates
+    email_templates = [
+        f"Discover a smarter solution for {audience}. With features like {', '.join(features)}, you can now {points[0]} easily.",
+
+        f"Looking to improve efficiency? Our platform for {audience} offers {', '.join(features)} to help you {points[0]}.",
+
+        f"Introducing a powerful solution for {audience}. Experience {', '.join(features)} and enjoy {points[0]}."
+    ]
+
+    return {
+        "blog": random.choice(blog_templates),
+        "social_media_posts": random.choice(social_templates),
+        "email_teaser": random.choice(email_templates)
+    }
+
+# -----------------------------
+# API: Fact Check
+# -----------------------------
 @app.post("/fact-check", response_model=FactSheet)
 def fact_check(input_data: FactCheckInput):
-    if not input_data.text and not input_data.url:
-        raise HTTPException(status_code=400, detail="Either 'text' or 'url' must be provided.")
+    if not input_data.text:
+        raise HTTPException(status_code=400, detail="Text is required")
 
-    if USE_MOCK:
-        return generate_fact_sheet_mock(input_data.text or input_data.url)
+    result = generate_fact_sheet_dynamic(input_data.text)
 
-    prompt = f"Extract features, target audience, and key points from the following content:\n{input_data.text or input_data.url}"
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Extract features, target audience, and key points from the given text. Return ONLY JSON."
-                },
-                {
-                    "role": "user",
-                    "content": input_data.text
-                }
-            ]
-        )
-
-        result = response.choices[0].message.content
-
-        import json
-        parsed = json.loads(result)
-
-        return FactSheet(
-            features=parsed.get("features", []),
-            target_audience=parsed.get("target_audience", ""),
-            key_points=parsed.get("key_points", []),
-            unclear_info=parsed.get("unclear_info", [])
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing input: {str(e)}")
-
-# Endpoint for content generation
-@app.post("/generate-content", response_model=GeneratedContent)
-def generate_content(input_data: ContentGenerationInput):
-    print("Input Data:", input_data)  # Log input data
-
-    if USE_MOCK:
-        mock_output = generate_content_mock(
-            {
-                "features": input_data.features,
-                "target_audience": input_data.target_audience,
-                "key_points": input_data.key_points,
-            },
-            input_data.target_audience
-        )
-        print("Mock Output:", mock_output)  # Log mock output
-        return mock_output
-
-    prompt = (
-        f"Generate a blog, social media posts, and an email teaser based on the following fact-sheet:\n"
-        f"Features: {', '.join(input_data.features)}\n"
-        f"Target Audience: {input_data.target_audience}\n"
-        f"Key Points: {', '.join(input_data.key_points)}"
+    return FactSheet(
+        features=result["features"],
+        target_audience=result["target_audience"],
+        key_points=result["key_points"],
+        unclear_info=[]
     )
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Generate blog, social media posts, and email teaser from the given fact sheet. Return in JSON format with keys: blog, social_media_posts, email_teaser."
-                },
-                {
-                    "role": "user",
-                    "content": f"""
-                    Features: {input_data.features}
-                    Target Audience: {input_data.target_audience}
-                    Key Points: {input_data.key_points}
-                    """
-                }
-            ]
-        )
+# -----------------------------
+# API: Generate Content
+# -----------------------------
+@app.post("/generate-content", response_model=GeneratedContent)
+def generate_content(input_data: ContentGenerationInput):
+    fact_sheet = {
+        "features": input_data.features,
+        "target_audience": input_data.target_audience,
+        "key_points": input_data.key_points
+    }
 
-        result = response.choices[0].message.content
+    result = generate_content_mock(fact_sheet)
 
-        import json
-        parsed = json.loads(result)
+    return GeneratedContent(
+        blog=result["blog"],
+        social_media_posts=result["social_media_posts"],
+        email_teaser=result["email_teaser"]
+    )
 
-        return GeneratedContent(
-            blog=parsed.get("blog", ""),
-            social_media_posts=parsed.get("social_media_posts", []),
-            email_teaser=parsed.get("email_teaser", "")
-        )
-    except Exception as e:
-        print("Error:", str(e))  # Log the error
-        raise HTTPException(status_code=500, detail=f"Error generating content: {str(e)}")
-
-# Endpoint for full pipeline: fact-check + content generation
-@app.post("/generate-full-content", response_model=dict)
+# -----------------------------
+# API: Full Pipeline
+# -----------------------------
+@app.post("/generate-full-content")
 def generate_full_content(input_data: FactCheckInput):
     if not input_data.text:
-        raise HTTPException(status_code=400, detail="'text' must be provided.")
+        raise HTTPException(status_code=400, detail="Text is required")
 
-    try:
-        # Step 1: Generate Fact-Sheet
-        fact_sheet = fact_check(input_data)
+    fact_sheet = generate_fact_sheet_dynamic(input_data.text)
+    generated_content = generate_content_mock(fact_sheet)
 
-        # Safe conversion of fact_sheet to ensure it's a Pydantic object
-        if isinstance(fact_sheet, dict):
-            fact_sheet = FactSheet(**fact_sheet)
-
-        # Step 2: Pass Fact-Sheet to Content Generator
-        content_input = ContentGenerationInput(
-            features=fact_sheet.features,
-            target_audience=fact_sheet.target_audience,
-            key_points=fact_sheet.key_points
-        )
-        generated_content = generate_content(content_input)
-
-        # Ensure dict format
-        if not isinstance(generated_content, dict):
-            generated_content = generated_content.dict()
-
-        print("FINAL OUTPUT:", generated_content)  # Debugging log
-
-        # Step 3: Return both Fact-Sheet and Generated Content
-        return {
-            "fact_sheet": fact_sheet if isinstance(fact_sheet, dict) else fact_sheet.dict(),
-            "generated_content": generated_content
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating full content: {str(e)}")
+    return {
+        "fact_sheet": fact_sheet,
+        "generated_content": generated_content
+    }

@@ -12,12 +12,10 @@
             background: linear-gradient(135deg, #eef2f7, #d9e4f5);
         }
 
-        /* Fix scroll issue */
         body {
             display: block;
         }
 
-        /* Main container */
         .container {
             max-width: 800px;
             margin: auto;
@@ -71,12 +69,16 @@
             box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
         }
 
-        /* Output section */
+        button.copy-button {
+            padding: 8px 20px;
+            font-size: 14px;
+        }
+
+  
         .output {
             margin-top: 30px;
         }
 
-        /* Section cards */
         .output h3 {
             margin-top: 20px;
             color: #34495e;
@@ -149,24 +151,6 @@
         .fact-sheet li:hover {
             transform: scale(1.02);
         }
-
-        /* Copy button styling */
-        .copy-button {
-            font-size: 13px;
-            padding: 6px 12px;
-            border-radius: 6px;
-            height: auto;
-            cursor: pointer;
-            background: linear-gradient(135deg, #007BFF, #0056b3);
-            color: white;
-            border: none;
-            transition: 0.3s;
-        }
-
-        .copy-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-        }
     </style>
 </head>
 <body>
@@ -177,6 +161,7 @@
         <div class="output" id="output">
             <!-- Results will be displayed here -->
         </div>
+        <button id="regenerateButton" onclick="regenerateContent()" style="display: none;"></button>
     </div>
 
     <div class="fact-sheet">
@@ -188,9 +173,14 @@
 
     <script>
         async function generateContent() {
-            const inputText = document.getElementById('inputText').value;
+            const inputText = document.getElementById('inputText').value.trim();
             const outputDiv = document.getElementById('output');
             const factSheetDiv = document.getElementById('factSheetContent');
+
+            if (!inputText) {
+                alert("Please enter some text!");
+                return;
+            }
 
             outputDiv.innerHTML = '<p>Loading...</p>';
             factSheetDiv.innerHTML = '<p>Loading fact sheet...</p>';
@@ -205,6 +195,10 @@
                         text: inputText
                     })
                 });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
 
                 const data = await response.json();
                 console.log("API DATA:", data);
@@ -235,15 +229,15 @@
                 outputDiv.innerHTML = `
                     <h3>Blog:</h3>
                     <p contenteditable="true">${blog}</p>
-                    <button class="copy-button" onclick="copyToClipboard('${blog}')">Copy Blog</button>
+                    <button class="copy-button" onclick="copyEditable(this)">Copy Blog</button>
                     <h3>Social Media Posts:</h3>
                     <ul>
                         ${socialMediaPosts.map(post => `<li contenteditable="true">${post}</li>`).join('')}
                     </ul>
-                    <button class="copy-button" onclick="copySocialPosts()">Copy Social Posts</button>
+                    <button class="copy-button" onclick="copyEditable(this)">Copy Social Posts</button>
                     <h3>Email Teaser:</h3>
                     <p contenteditable="true">${emailTeaser}</p>
-                    <button class="copy-button" onclick="copyToClipboard('${emailTeaser}')">Copy Email</button>
+                    <button class="copy-button" onclick="copyEditable(this)">Copy Email</button>
                 `;
             } catch (error) {
                 console.error("Error:", error);
@@ -252,7 +246,8 @@
             }
         }
 
-        function copyToClipboard(text) {
+        function copyEditable(button) {
+            const text = button.previousElementSibling.innerText;
             navigator.clipboard.writeText(text).then(() => {
                 alert("Copied!");
             }).catch(err => {
@@ -260,14 +255,10 @@
             });
         }
 
-        function copySocialPosts() {
-            const socialMediaPosts = document.querySelectorAll('.output ul li');
-            const postsText = Array.from(socialMediaPosts).map(post => post.textContent).join('\n');
-            navigator.clipboard.writeText(postsText).then(() => {
-                alert("Social posts copied!");
-            }).catch(err => {
-                console.error("Failed to copy social posts: ", err);
-            });
+        function regenerateContent() {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '<p>⏳ Regenerating content...</p>';
+            generateContent(); // Reuse the existing generateContent function
         }
     </script>
 </body>
